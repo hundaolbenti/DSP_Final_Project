@@ -1,17 +1,39 @@
 # DSP_Final_Project
-By Hundaol Benti, Natnael Mulu, Robera Bushura
 # Environmental Sound Classification Experiment Guide
 
 This README reconstructs the full experiment workflow from the uploaded notebook exports and turns it into a single step-by-step guide.
-
-The original uploaded files were PDFs exported from notebooks with names prefixed by `vertopal.com_`. In this guide, I refer to them using the notebook names **without** that prefix and with the `.ipynb` extension, as requested:
-
 - `1_Data_Exploration.ipynb`
 - `2_DSP_ Analysis.ipynb`
 - `3_CNN_Models.ipynb`
 - `4_Pretrained Model Options Comparison.ipynb`
 - `5_Classification with EfficientNetB0 (2).ipynb`
 - `6_DSP_FINAL_PROJECT.ipynb`
+
+## Project Description
+
+The **Environmental Sound Classification (ESC-50) Pipeline** is an end-to-end machine learning system designed to recognize and categorize complex audio signals. By treating sound as a visual problem, the project converts raw audio waves into high-resolution **Log-Mel Spectrograms**. This allows the system to utilize state-of-the-art Computer Vision architectures, specifically **EfficientNetB0**, to achieve high-accuracy classification across 50 distinct environmental sound categories, ranging from natural soundscapes to human-made noises.
+
+---
+
+## Problem
+
+Classifying environmental audio presents several unique technical hurdles that traditional machine learning models struggle to overcome:
+
+*   **Temporal and Spectral Complexity:** Unlike speech or music, environmental sounds (like a chainsaw or rain) often lack a clear "melody" and instead rely on specific patterns of frequency over time.
+*   **Data Scarcity:** Modern deep learning models typically require millions of data points. The **ESC-50 dataset** provides only 2,000 samples, making it difficult to train large models from scratch without massive overfitting.
+*   **Environmental Noise:** Background interference and overlapping sounds make it difficult for models to isolate the primary "signal" or sound event.
+*   **Feature Representation:** Raw audio data is extremely high-dimensional; processing it directly is computationally expensive and often hides the most important identifying features of the sound.
+
+---
+
+## Solution
+
+This project implements a robust, research-driven solution that bridges the gap between Digital Signal Processing (DSP) and Deep Learning:
+
+*   **Visual Representation (DSP):** We use the **Short-Time Fourier Transform (STFT)** to map audio into the frequency domain while preserving time data. These are scaled to the **Mel Scale**, which mimics the non-linear way human ears perceive pitch, resulting in a "picture" of the sound that a CNN can "see."
+*   **Transfer Learning:** To solve the problem of a small dataset, we utilize **Transfer Learning**. We take a model pretrained on millions of images (ImageNet) and "fine-tune" it to recognize the unique textures and patterns found in audio spectrograms.
+*   **Data Augmentation (SpecAugment & Mixup):** To increase the diversity of our training data, we apply **SpecAugment** (masking parts of the frequency or time) and **Mixup** (blending two different sounds together). This forces the model to learn more robust features rather than memorizing specific samples.
+*   **Cross-Validation:** We utilize a **5-fold cross-validation** strategy, ensuring that the model's accuracy is consistent across the entire dataset and not just a result of "getting lucky" with a specific train/test split.
 
 ## Project Goal
 
@@ -26,7 +48,7 @@ The project builds an **environmental sound classification pipeline** on the **E
 
 ---
 
-## End-to-End Experiment Flow
+## End-to-End Experiment Features and Flow
 
 ### Step 1: Explore the dataset with `1_Data_Exploration.ipynb`
 
@@ -143,7 +165,9 @@ Once the spectrogram representation is established, this notebook starts model d
    - **Model 1: Baseline CNN**
    - **Model 2: Multi-Channel CNN**
    - **Model 3: Augmented CNN**
-4. Trains models fold by fold.
+   - **Model 5: SpecAugmented CNN**
+   - **Model 3: MIXUP CNN**
+4. Trains models on fold1.
 5. Tracks training and validation loss/accuracy.
 6. Computes evaluation metrics such as:
    - accuracy
@@ -374,7 +398,18 @@ If you are rerunning the project from the beginning, follow this exact order:
    - export final metrics and per-class analysis.
 
 ---
-
+# How to use and test the best model on external audio
+1. Add or use already added audio from 'External_Test_Audio' folder
+2. Open `6_DSP_Final_Project.ipynb`
+   - Run Python Module importing cell,
+   - Run the cell that gives our device Cuda GPU or CPU on the second Cell,
+   - Run Dataset Download and Load Code code block 3
+   - Run define 'wave_to_logmel' function to define our function for converting input audio to Spectrogram (cruciall)
+3. Run the last codeblock in the  `6_DSP_Final_Project.ipynb`
+   - this performs batch testing on 5 fold models,
+   - Both Prediction and Spectral Visualization are shown
+     ## For more information follow the Video Guide
+     
 ## Why the overall workflow makes sense
 
 The progression of notebooks is methodologically sound:
@@ -443,4 +478,38 @@ The uploaded notebook sequence documents a clear research path:
 
 Among the uploaded results, the strongest final outcome is reported in `6_DSP_FINAL_PROJECT.ipynb`, with an overall mean accuracy of **86.50% ± 2.13%** across the 5 ESC-50 folds.
 
-If you want to reproduce the project cleanly, use the six notebooks in the exact order listed above and treat the final notebook as the authoritative end-of-project evaluation stage.
+## Tools & Technologies
+
+The project leverages a modern stack centered on the Python data science ecosystem, combining high-performance audio processing with deep learning frameworks.
+
+*   **Programming Language:** Python 3.x
+*   **Deep Learning Frameworks:** 
+    *   **PyTorch:** Core framework for building and training neural networks.
+    *   **Torchvision:** Used for accessing pretrained computer vision backbones like EfficientNet and ResNet.
+*   **Audio Signal Processing:**
+    *   **Librosa:** Primary library for audio loading, STFT, Mel-filterbank construction, and MFCC extraction.
+    *   **Torchaudio:** Utilized for efficient, GPU-accelerated audio transformations.
+*   **Data Science & Visualization:**
+    *   **NumPy & Pandas:** For metadata manipulation and numerical array processing.
+    *   **Matplotlib & Seaborn:** For generating waveforms, spectrograms, and confusion matrices.
+*   **Development Environment:** Jupyter Notebooks / Google Colab.
+
+---
+
+## Team Members
+
+*   **Hundaol Benti Bekele** – H00540231
+*   **Natnael Mulu Tenagne** - H00540267
+*   **Robera Bushura Tariku** - H00540268
+    *   
+---
+
+## Future Improvements
+
+To build upon the current success of the **86.50%** accuracy rate, the following enhancements are proposed:
+
+*   **Audio Spectrogram Transformers (AST):** Transitioning from Convolutional Neural Networks (CNNs) to Transformer-based architectures to better capture long-range global dependencies in complex environmental audio.
+*   **Real-Time Edge Deployment:** Optimizing the model via **Quantization** and **Pruning** to allow it to run locally on mobile devices or IoT sensors for real-time noise monitoring.
+*   **Background Noise Robustness:** Implementing **Denoising Autoencoders** or GANs to clean audio samples before classification, improving performance in high-interference real-world settings.
+*   **Multi-Label Detection:** Moving beyond single-class classification to identify multiple simultaneous sound events (e.g., detecting "Rain" and "Car Horn" at the same time).
+*   **Expanded Dataset Integration:** Incorporating the **AudioSet** (Google) or **UrbanSound8K** datasets to increase the model's vocabulary and improve its ability to generalize across different acoustic environments.
